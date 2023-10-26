@@ -1,9 +1,6 @@
 const { ethers } = require('ethers');
 const csv = require('csv-parser')
-
 const fs = require("fs");
-const { merkleProof } = require("./merkleRootAndProof");
-
 
 const infuraUrl = '';
 const privateKey = '';
@@ -399,13 +396,9 @@ const abi = [
         "type": "function"
     }
 ];
+
 const Contractaddress = "0xe5bA0B5A3B646D7c145bdD187823679dC7542a9A";
-const MerkleProof = merkleProof.map(number => number.toString());
-console.log("MerkleProof:", MerkleProof);
 const values = [];
-let Values = [];
-
-
 
 fs.createReadStream('teamFinance.csv')
     .pipe(csv())
@@ -428,15 +421,10 @@ fs.createReadStream('teamFinance.csv')
         (async () => {
 
             const index = "0";
-            const revocable = true;
-            const claimAmount = "1";
 
             const contract = new ethers.Contract(Contractaddress, abi, wallet);
-            const transaction = await contract.claim(values[index][0], values[index][1], values[index][2], values[index][3], values[index][4], values[index][5], values[index][6], MerkleProof, claimAmount);
-            const tx = await transaction.wait();
-            console.log("trancation detail :", tx);
-
-
+            const transaction = await contract.getClaimable(values[index][0], values[index][2], values[index][3], values[index][4], values[index][5], values[index][6]);
+            console.log("GetClaimable detail :", transaction);
 
         })();
     });

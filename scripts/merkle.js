@@ -3,7 +3,7 @@ const { merkleRoot } = require("./tree.json");
 const fs = require("fs");
 
 const infuraUrl = '';
-const privateKey = ''; // Replace with your private key
+const privateKey = '';
 const provider = new ethers.JsonRpcProvider(infuraUrl);
 const wallet = new ethers.Wallet(privateKey, provider);
 
@@ -21,13 +21,34 @@ console.log(root);
 const value = '10000'
 
 const contract = new ethers.Contract(Contractaddress1, abi, wallet);
+const contract1 = new ethers.Contract(Contractaddress1, abi, provider);
+
+const eventSignature = contract1.interface.getEvent('VestingCreated');
+
+
+const filter = {
+    address: Contractaddress1,
+    topics: [eventSignature.topics],
+};
 
 (async () => {
     try {
         const tx = await contract.createVesting(tokenAddress, root, value);
+
         const receipt = await tx.wait();
         console.log('Transaction receipt:', receipt);
-    } catch (error) {
+
+
+        provider.getLogs(filter).then((logs) => {
+            logs.forEach((log) => {
+                const parsedLog = contract.interface.parseLog(log);
+                console.log("Received event data:", parsedLog.values);
+            });
+        });
+
+
+    }
+    catch (error) {
         console.error('Error sending transaction:', error);
     }
 })();
